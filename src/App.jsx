@@ -12,10 +12,8 @@ import * as Dialog from '@radix-ui/react-dialog';
 
 
 
-// Set the app element for accessibility
 ReactModal.setAppElement('#root');
 
-// Fix for default marker icon
 const DefaultIcon = L.icon({
   iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
   shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
@@ -46,6 +44,8 @@ function CenterMapButton({ userLocation }) {
   
   if (!userLocation) return null;
 
+
+  //button that centers map back 
   return (
     <button
       onClick={() => map.setView([userLocation.lat, userLocation.lng], 13)}
@@ -90,9 +90,9 @@ function App() {
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false); // State for welcome popup
 
 
-
+//getting the user's location
   useEffect(() => {
-    setIsWelcomeModalOpen(true); // Show welcome popup when app loads
+    setIsWelcomeModalOpen(true); 
     if (navigator.geolocation) {
       setIsLoading(true);
       navigator.geolocation.getCurrentPosition(
@@ -139,6 +139,7 @@ function App() {
 
   return (
     <>
+      //Initializing the popout menu, accordion list, popout, and map
        <HamburgerMenu onClick={() => setIsMenuOpen(!isMenuOpen)} isOpen={isMenuOpen} />
 <MenuContent isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
 
