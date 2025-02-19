@@ -1,0 +1,35 @@
+TODO List for Location Implementation:
+
+Downtown Route:
+- [x] 35th St. under FDR Drive
+- [x] Chinatown, Lafayette & Leonard St.
+- [x] Staten Island Ferry Terminal
+- [x] Sunshine Hotel/Bowery Mission
+- [x] Madison Square Park
+- [x] Penn Station
+
+Uptown Route:
+- [x] SW corner 51st St. & Broadway
+- [x] Port Authority, 40th St.
+- [x] 79th St. Boat Basin
+- [x] 86th St. & West End Ave.
+- [x] Cathedral of St. John the Divine
+- [x] Harlem Hospital
+- [x] Lexington Ave and 124th St.
+- [x] Central Park
+
+Bronx Route:
+- [x] SW corner Randall & Bryant Ave.
+- [x] NW corner Lafayette & Manida St.
+- [x] Lincoln Hospital
+- [x] 164th St. & Ogden Ave.
+- [x] 170th St. & Jerome Ave.
+- [x] Fordham Rd. & University Ave.
+- [x] Fordham Rd. & Webster Ave.
+
+Features:
+- [x] Sort locations by proximity to user
+- [x] Highlight 5 closest locations in green (#39FF14)
+- [x] Display distance for each location
+- [x] Add "View on Map" functionality
+- [x] Implement close button for mobile

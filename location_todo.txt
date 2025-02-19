@@ -1,0 +1,21 @@
+- [x] Downtown - 35th St. under FDR Drive
+- [x] Downtown - Chinatown, Lafayette & Leonard St.
+- [x] Downtown - Staten Island Ferry Terminal
+- [x] Downtown - Sunshine Hotel/Bowery Mission
+- [x] Downtown - Madison Square Park
+- [x] Downtown - Penn Station
+- [x] Uptown - SW corner 51st St. & Broadway
+- [x] Uptown - Port Authority, 40th St.
+- [x] Uptown - 79th St. Boat Basin
+- [x] Uptown - 86th St. & West End Ave.
+- [x] Uptown - Cathedral of St. John the Divine
+- [x] Uptown - Harlem Hospital
+- [x] Uptown - Lexington Ave and 124th St.
+- [x] Uptown - Central Park
+- [x] Bronx - SW corner Randall & Bryant Ave.
+- [x] Bronx - NW corner Lafayette & Manida St.
+- [x] Bronx - Lincoln Hospital
+- [x] Bronx - 164th St. & Ogden Ave.
+- [x] Bronx - 170th St. & Jerome Ave.
+- [x] Bronx - Fordham Rd. & University Ave.
+- [x] Bronx - Fordham Rd. & Webster Ave.

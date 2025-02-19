@@ -1,0 +1,10 @@
+- [x] Add Downtown locations
+- [x] Add Uptown locations
+- [x] Add Bronx locations
+- [x] Implement location sorting
+- [x] Add green highlighting for closest locations
+- [x] Verify all locations display correctly
+- [x] Ensure mobile responsiveness
+- [x] Add close buttons to location cards
+- [x] Implement "View on Map" functionality
+- [x] Test distance calculations
