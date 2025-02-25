@@ -1,53 +1,41 @@
-import os
-from newsapi import NewsApiClient
-from typing import List, Dict, Optional
-from dotenv import load_dotenv
-from functools import lru_cache
+from typing import List, Dict
 from datetime import datetime, timedelta
 import logging
 from fastapi import Request
-from ..core.limiter import limiter
+from functools import lru_cache
 
 logger = logging.getLogger(__name__)
-load_dotenv()
-
-news_api = NewsApiClient(api_key=os.getenv("NEWS_API_KEY"))
 
 @lru_cache(maxsize=100)
-@limiter.limit("5/minute")
 async def get_stock_news(request: Request, company_name: str, ticker: str) -> List[Dict]:
     """
     Fetch news articles for a given company and stock ticker.
-    Uses caching to improve performance and rate limiting to prevent API abuse.
+    Uses caching to improve performance.
     """
     try:
         logger.info(f"Fetching news for {company_name} ({ticker})")
-        news = news_api.get_everything(
-            q=f"{company_name} OR {ticker}",
-            language='en',
-            sort_by='relevancy',
-            page_size=5,
-            from_param=(datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
-        )
         
-        if not news or 'articles' not in news:
-            logger.warning(f"No news found for {company_name} ({ticker})")
-            return []
-            
-        articles = [
+        # Mock news data for testing
+        mock_news = [
             {
-                "title": article["title"],
-                "description": article["description"],
-                "url": article["url"],
-                "published_at": article["publishedAt"],
-                "source": article["source"]["name"]
+                "title": f"{company_name} Market Update",
+                "description": f"Latest market analysis for {ticker}...",
+                "url": "https://example.com/news/1",
+                "published_at": datetime.now().isoformat(),
+                "source": "Market News"
+            },
+            {
+                "title": f"{company_name} Industry Trends",
+                "description": f"Industry analysis for {ticker}...",
+                "url": "https://example.com/news/2",
+                "published_at": (datetime.now() - timedelta(days=1)).isoformat(),
+                "source": "Industry Insights"
             }
-            for article in news["articles"]
-            if all(key in article for key in ["title", "description", "url", "publishedAt", "source"])
         ]
         
-        logger.info(f"Found {len(articles)} news articles for {ticker}")
-        return articles
+        logger.info(f"Returning mock news for {ticker}")
+        return mock_news
+            
     except Exception as e:
         logger.error(f"Error fetching news for {company_name} ({ticker}): {e}", exc_info=True)
         return []

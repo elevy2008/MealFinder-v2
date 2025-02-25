@@ -3,7 +3,6 @@ from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 import logging
 from fastapi import Request
-from ..core.limiter import limiter
 
 logger = logging.getLogger(__name__)
 
