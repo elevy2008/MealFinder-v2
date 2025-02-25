@@ -1,0 +1,24 @@
+[tool.poetry]
+name = "app"
+version = "0.1.0"
+description = ""
+authors = ["Devin AI <158243242+devin-ai-integration[bot]@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+fastapi = {extras = ["standard"], version = "^0.115.8"}
+psycopg = {extras = ["binary"], version = "^3.2.5"}
+fastapi-mail = "^1.4.2"
+python-jose = {extras = ["cryptography"], version = "^3.4.0"}
+passlib = {extras = ["bcrypt"], version = "^1.7.4"}
+yfinance = "^0.2.54"
+newsapi-python = "^0.2.7"
+python-dotenv = "^1.0.1"
+slowapi = "^0.1.9"
+aiohttp = "^3.11.13"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
