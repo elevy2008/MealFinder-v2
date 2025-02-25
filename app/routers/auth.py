@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Request
 from fastapi.responses import JSONResponse
 from ..schemas.user import UserCreate, UserLogin, Token, EmailOnlyRegister
+from ..core.limiter import limiter, rate_limit_exceeded_handler
 from ..services.auth import create_access_token, get_password_hash, verify_password, get_current_user
 from datetime import timedelta
 import uuid
@@ -47,6 +48,7 @@ async def register(request: Request, user: UserCreate):
         logger.info(f"Access token generated for user: {user_id}")
         
         return JSONResponse(
+            status_code=status.HTTP_201_CREATED,
             content={"access_token": access_token, "token_type": "bearer"}
         )
     except Exception as e:
