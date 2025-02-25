@@ -7,6 +7,7 @@ import sys
 import asyncio
 from dotenv import load_dotenv
 from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 from datetime import datetime
 import logging
 from .core.limiter import limiter, rate_limit_exceeded_handler
@@ -52,11 +53,6 @@ async def startup_event():
         logger.info("Starting Return API server")
         logger.info(f"Environment: {os.getenv('ENV', 'development')}")
         
-        # Configure rate limiter
-        app.state.limiter = limiter
-        app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
-        logger.info("Rate limiter configured")
-        
         # Initialize routers
         app.include_router(auth.router)
         app.include_router(portfolio.router)
@@ -79,17 +75,14 @@ async def shutdown_event():
         logger.error(f"Error during shutdown: {e}", exc_info=True)
         raise
 
-# Configure rate limiter
+# Configure middleware and rate limiter
 try:
+    # Configure rate limiter first
     app.state.limiter = limiter
     app.add_exception_handler(RateLimitExceeded, rate_limit_exceeded_handler)
-    logger.info("Rate limiter configured successfully")
-except Exception as e:
-    logger.error(f"Failed to configure rate limiter: {e}", exc_info=True)
-    raise
-
-# Configure CORS
-try:
+    app.add_middleware(SlowAPIMiddleware)
+    
+    # Add CORS after rate limiter
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -98,9 +91,10 @@ try:
         allow_headers=["*"],
         expose_headers=["*"]
     )
-    logger.info("CORS configured successfully")
+    
+    logger.info("Rate limiter and middleware configured successfully")
 except Exception as e:
-    logger.error(f"Failed to configure CORS: {e}", exc_info=True)
+    logger.error(f"Failed to configure middleware: {e}", exc_info=True)
     raise
 
 # Include routers
@@ -122,98 +116,41 @@ async def error_handling_middleware(request: Request, call_next):
             }
         )
         
-        response = await call_next(request)
-        process_time = (datetime.now() - start_time).total_seconds()
-        
-        logger.info(
-            "Request completed",
-            extra={
-                "request_id": request_id,
-                "path": request.url.path,
-                "method": request.method,
-                "status_code": response.status_code,
-                "process_time": process_time
-            }
-        )
-        
-        response.headers["X-Request-ID"] = request_id
-        return response
-        
-    except Exception as e:
-        logger.error(
-            "Request failed",
-            extra={
-                "request_id": request_id,
-                "path": request.url.path,
-                "method": request.method,
-                "error": str(e)
-            },
-            exc_info=True
-        )
-        return JSONResponse(
-            status_code=500,
-            content={
-                "detail": "Internal server error",
-                "request_id": request_id
-            },
-            headers={"X-Request-ID": request_id}
-        )
-    
-    try:
-        response = await call_next(request)
-        process_time = (datetime.now() - start_time).total_seconds()
-        
-        logger.info(
-            "Request completed",
-            extra={
-                "request_id": request_id,
-                "path": request.url.path,
-                "method": request.method,
-                "status_code": response.status_code,
-                "process_time": process_time
-            }
-        )
-        
-        # Add request ID to response headers
-        response.headers["X-Request-ID"] = request_id
-        return response
-        
-    except RateLimitExceeded:
-        logger.warning(
-            "Rate limit exceeded",
-            extra={
-                "request_id": request_id,
-                "path": request.url.path,
-                "method": request.method,
-                "client_host": request.client.host if request.client else "unknown"
-            }
-        )
-        return JSONResponse(
-            status_code=429,
-            content={
-                "detail": "Too many requests",
-                "request_id": request_id
-            },
-            headers={"X-Request-ID": request_id}
-        )
-        
-    except asyncio.TimeoutError:
-        logger.error(
-            "Request timed out",
-            extra={
-                "request_id": request_id,
-                "path": request.url.path,
-                "method": request.method
-            }
-        )
-        return JSONResponse(
-            status_code=504,
-            content={
-                "detail": "Request timed out",
-                "request_id": request_id
-            },
-            headers={"X-Request-ID": request_id}
-        )
+        try:
+            response = await call_next(request)
+            process_time = (datetime.now() - start_time).total_seconds()
+            
+            logger.info(
+                "Request completed",
+                extra={
+                    "request_id": request_id,
+                    "path": request.url.path,
+                    "method": request.method,
+                    "status_code": response.status_code,
+                    "process_time": process_time
+                }
+            )
+            
+            response.headers["X-Request-ID"] = request_id
+            return response
+            
+        except RateLimitExceeded:
+            logger.warning(
+                "Rate limit exceeded",
+                extra={
+                    "request_id": request_id,
+                    "path": request.url.path,
+                    "method": request.method
+                }
+            )
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": "Too many requests",
+                    "request_id": request_id
+                },
+                headers={"X-Request-ID": request_id}
+            )
         
     except Exception as e:
         logger.error(
@@ -227,32 +164,53 @@ async def error_handling_middleware(request: Request, call_next):
             },
             exc_info=True
         )
-        return JSONResponse(
-            status_code=500,
-            content={
-                "detail": "Internal server error",
-                "request_id": request_id
-            },
-            headers={"X-Request-ID": request_id}
-        )
+        
+        if isinstance(e, RateLimitExceeded):
+            return JSONResponse(
+                status_code=429,
+                content={
+                    "detail": "Too many requests",
+                    "request_id": request_id
+                },
+                headers={"X-Request-ID": request_id}
+            )
+        elif isinstance(e, asyncio.TimeoutError):
+            return JSONResponse(
+                status_code=504,
+                content={
+                    "detail": "Request timed out",
+                    "request_id": request_id
+                },
+                headers={"X-Request-ID": request_id}
+            )
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "detail": "Internal server error",
+                    "request_id": request_id
+                },
+                headers={"X-Request-ID": request_id}
+            )
 
 app.include_router(auth.router)
 app.include_router(portfolio.router)
 app.include_router(email.router)
 
 @app.get("/healthz")
+@limiter.limit("5/minute")
 async def healthz(request: Request):
-    """Health check endpoint"""
+    """Health check endpoint with rate limiting"""
     request_id = os.urandom(8).hex()
-    logger.info(
-        "Health check request received",
-        extra={
-            "request_id": request_id,
-            "client_host": request.client.host if request.client else "unknown"
-        }
-    )
-    
     try:
+        logger.info(
+            "Health check request received",
+            extra={
+                "request_id": request_id,
+                "client_host": request.client.host if request.client else "unknown"
+            }
+        )
+        
         # Basic health checks
         checks = {
             "api": True,
